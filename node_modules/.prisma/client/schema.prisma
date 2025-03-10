@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../database.sqlite"
+}
+
+// 用户模型 - 包含房东和租客
+model User {
+  id           String    @id @default(uuid())
+  lineUserId   String    @unique
+  displayName  String
+  userType     String    @default("TENANT")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // 关系
+  properties   Property[] // 房东发布的房源
+  inquiries    Inquiry[]  // 租客发出的询问
+  sentTransaction     Transaction[] @relation("SenderUser")
+  receivedTransaction Transaction[] @relation("ReceiverUser")
+}
+
+// 房源模型
+model Property {
+  id           String    @id @default(uuid())
+  title        String
+  location     String
+  type         String   // 套房、雅房、整层等
+  price        Float
+  description  String
+  status       String    @default("AVAILABLE")
+  imageUrls    String?  // JSON 字符串存储多张图片
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // 关系
+  ownerId      String
+  owner        User     @relation(fields: [ownerId], references: [id])
+  inquiries    Inquiry[]
+}
+
+// 租房询问模型
+model Inquiry {
+  id           String    @id @default(uuid())
+  status       String    @default("PENDING")
+  message      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // 关系
+  tenantId     String
+  tenant       User     @relation(fields: [tenantId], references: [id])
+  propertyId   String
+  property     Property @relation(fields: [propertyId], references: [id])
+  transaction  Transaction?
+}
+
+// 交易模型
+model Transaction {
+  id           String    @id @default(uuid())
+  amount       Float
+  type         String    // 改为字符串类型
+  status       String    @default("PENDING")
+  paymentMethod String?
+  paymentId    String?   // 外部支付系统的ID
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // 关系
+  senderId     String
+  sender       User     @relation("SenderUser", fields: [senderId], references: [id])
+  receiverId   String
+  receiver     User     @relation("ReceiverUser", fields: [receiverId], references: [id])
+  inquiryId    String?  @unique
+  inquiry      Inquiry? @relation(fields: [inquiryId], references: [id])
+}
+
+// 添加常量注释，方便开发者参考原枚举值
+// UserType 可选值: "LANDLORD", "TENANT"
+// PropertyStatus 可选值: "AVAILABLE", "RENTED", "UNAVAILABLE"
+// InquiryStatus 可选值: "PENDING", "APPROVED", "REJECTED", "COMPLETED"
+// TransactionType 可选值: "DEPOSIT", "COMMISSION"
+// TransactionStatus 可选值: "PENDING", "COMPLETED", "FAILED", "REFUNDED" 

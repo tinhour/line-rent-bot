@@ -1,0 +1,24 @@
+{
+  "name": "line-rent-bot",
+  "version": "1.0.0",
+  "description": "LINE 租房机器人",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
+  },
+  "dependencies": {
+    "@line/bot-sdk": "^7.5.2",
+    "@prisma/client": "^4.10.1",
+    "express": "^4.18.2",
+    "dotenv": "^16.0.3",
+    "body-parser": "^1.20.1",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20",
+    "prisma": "^4.10.1"
+  }
+} 
